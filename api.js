@@ -18,7 +18,7 @@ const API = (() => {
 
   function headers() {
     return {
-      'Authorization': 'Basic ' + btoa(':' + _token),
+      'Authorization': 'Basic ' + btoa(_token + ':'),
       'Content-Type': 'application/json',
       'Accept': 'application/json'
     };
