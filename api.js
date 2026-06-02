@@ -24,8 +24,16 @@ const API = (() => {
     };
   }
 
+  async function fetchWithTimeout(url, options, ms = 8000) {
+    const ctrl = new AbortController();
+    const id = setTimeout(() => ctrl.abort(), ms);
+    try {
+      return await fetch(url, { ...options, signal: ctrl.signal });
+    } finally { clearTimeout(id); }
+  }
+
   async function get(path) {
-    const r = await fetch(`${_base}${path}`, { headers: headers() });
+    const r = await fetchWithTimeout(`${_base}${path}`, { headers: headers() });
     if (!r.ok) throw new Error(`GET ${path} → ${r.status} ${r.statusText}`);
     return r.json();
   }
