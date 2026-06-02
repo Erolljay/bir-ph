@@ -53,9 +53,9 @@
 
   function loading(msg = 'Loading…') {
     document.getElementById('loadingMsg').textContent = msg;
-    show('loadingOverlay');
+    document.getElementById('loadingOverlay').classList.add('active');
   }
-  function loaded() { hide('loadingOverlay'); }
+  function loaded() { document.getElementById('loadingOverlay').classList.remove('active'); }
 
   // ── Session storage ──
   function saveSession(url, token) {
