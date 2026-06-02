@@ -18,7 +18,7 @@ const API = (() => {
 
   function headers() {
     return {
-      'Authorization': `Bearer ${_token}`,
+      'Authorization': 'Basic ' + btoa(':' + _token),
       'Content-Type': 'application/json',
       'Accept': 'application/json'
     };
@@ -91,8 +91,15 @@ const API = (() => {
 
   // ── Businesses ──
   async function getBusinesses() {
-    const res = await get('/api4/businesses');
-    return (res.businesses || []).map(b => b.name);
+    // API2: test connection with /api2/customers, businesses must be entered manually
+    // Try api4/businesses first, fall back gracefully
+    try {
+      const res = await get('/api4/businesses');
+      if (res.businesses) return (res.businesses || []).map(b => b.name);
+    } catch {}
+    // API2: ping to verify token is valid
+    await get('/api2/customers?pageSize=1');
+    return ['__api2__']; // signal to app that we're in API2 mode
   }
 
   // ── Customers (batch) ──
