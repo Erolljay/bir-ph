@@ -676,8 +676,14 @@
     if (e.key === 'Enter') document.getElementById('btnConnect').click();
   });
 
-  // ── Auto-reconnect from session ──
-  const sess = loadSession();
-  if (sess.url && sess.token) connect(sess.url, sess.token);
+  // ── Cancel loading ──
+  document.getElementById('btnCancelLoad').addEventListener('click', () => {
+    loaded();
+    clearSession();
+    API.clear();
+  });
+
+  // ── Clear any stale session on load ──
+  clearSession();
 
 })();
