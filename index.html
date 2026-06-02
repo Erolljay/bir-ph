@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tallo CPA — BIR Compliance Suite</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="topbar-brand">
+      <span class="brand-name">Tallo CPA</span>
+      <span class="brand-sub">BIR Compliance Suite</span>
+    </div>
+    <div class="topbar-conn" id="connStatus">
+      <span class="conn-dot disconnected"></span>
+      <span class="conn-label">Not connected</span>
+    </div>
+  </header>
+
+  <div class="conn-panel" id="connPanel">
+    <div class="conn-card">
+      <h2>Connect to Manager.io</h2>
+      <p>Enter your Manager API URL and access token to get started.<br>
+         <small>Settings → Access Tokens → Create token</small></p>
+      <div class="form-row">
+        <label>Manager API URL
+          <input type="url" id="apiUrl" placeholder="https://app.manager.io" autocomplete="off">
+        </label>
+      </div>
+      <div class="form-row">
+        <label>Access Token
+          <input type="password" id="apiToken" placeholder="Paste your access token" autocomplete="off">
+        </label>
+      </div>
+      <div class="form-actions">
+        <button class="btn-primary" id="btnConnect">Connect</button>
+      </div>
+      <div class="conn-error" id="connError" hidden></div>
+    </div>
+  </div>
+
+  <div class="app" id="mainApp" hidden>
+    <div class="biz-bar">
+      <label>Business
+        <select id="bizSelect"><option value="">— select a business —</option></select>
+      </label>
+      <button class="btn-sm btn-ghost" id="btnDisconnect">Disconnect</button>
+    </div>
+
+    <nav class="tabs" id="tabNav">
+      <button class="tab active" data-tab="welcome">Welcome</button>
+      <button class="tab" data-tab="reports">Reports</button>
+      <button class="tab" data-tab="taxcodes">Tax Codes</button>
+      <button class="tab" data-tab="business">Business</button>
+      <button class="tab" data-tab="customers">Customers</button>
+      <button class="tab" data-tab="suppliers">Suppliers</button>
+      <button class="tab" data-tab="employees">Employees</button>
+      <button class="tab" data-tab="payslip">Payslip Items</button>
+      <button class="tab" data-tab="generate">Generate</button>
+    </nav>
+
+    <!-- WELCOME -->
+    <section class="tab-content active" id="tab-welcome">
+      <div class="page-intro">
+        <h1>Philippines — BIR Compliance</h1>
+        <p>Select a business above, then use the tabs to set up BIR compliance data and generate reports.</p>
+      </div>
+      <div class="intro-grid">
+        <div class="intro-card"><h3>Reports</h3><p>Install BIR report buttons into a business — SLSP, QAP, VAT Return, and more.</p></div>
+        <div class="intro-card"><h3>Tax Codes</h3><p>Create Philippine tax codes: VAT 12%, Zero-Rated, Exempt, and EWT rates.</p></div>
+        <div class="intro-card"><h3>Business</h3><p>Store TIN, RDO Code, Line of Business, and registration type.</p></div>
+        <div class="intro-card"><h3>Customers</h3><p>Tag each customer with TIN and taxpayer type for SLS generation.</p></div>
+        <div class="intro-card"><h3>Suppliers</h3><p>Tag each supplier with TIN, ATC code, and taxpayer type for SLP/QAP.</p></div>
+        <div class="intro-card"><h3>Employees</h3><p>Store TIN, SSS, PhilHealth, Pag-IBIG, and tax status for Form 2316.</p></div>
+        <div class="intro-card"><h3>Generate</h3><p>Export SLS/SLP/QAP as <strong>.DAT</strong> or <strong>Excel</strong>, generate <strong>2307</strong> and print/submit <strong>2316</strong>.</p></div>
+      </div>
+    </section>
+
+    <!-- REPORTS -->
+    <section class="tab-content" id="tab-reports">
+      <h2>Reports</h2>
+      <p>Install BIR report buttons into the selected business.</p>
+      <div class="notice" id="reportsNoBiz" hidden><p>⚠ Select a business above first.</p></div>
+      <div id="reportsContent">
+        <table class="data-table"><thead><tr><th>Report</th><th>Description</th><th>Status</th><th>Action</th></tr></thead>
+        <tbody id="reportsTbody"></tbody></table>
+      </div>
+    </section>
+
+    <!-- TAX CODES -->
+    <section class="tab-content" id="tab-taxcodes">
+      <h2>Tax Codes</h2>
+      <p>Create BIR-standard tax codes in the selected business.</p>
+      <div class="notice" id="taxcodesNoBiz" hidden><p>⚠ Select a business above first.</p></div>
+      <div id="taxcodesContent">
+        <div class="toolbar"><button class="btn-sm btn-outline" id="btnLoadTaxStatus">Load status</button></div>
+        <table class="data-table"><thead><tr><th>Tax Code</th><th>Rate</th><th>Type</th><th>Status</th><th>Action</th></tr></thead>
+        <tbody id="taxcodesTbody"></tbody></table>
+      </div>
+    </section>
+
+    <!-- BUSINESS -->
+    <section class="tab-content" id="tab-business">
+      <h2>Business Details</h2>
+      <p>Stored as custom fields, used by BIR reports.</p>
+      <div class="notice" id="businessNoBiz" hidden><p>⚠ Select a business above first.</p></div>
+      <div id="businessContent">
+        <form id="businessForm" class="detail-form">
+          <div class="form-row"><label>TIN (9 digits)<input type="text" id="biz_tin" placeholder="000-000-000" maxlength="11"></label></div>
+          <div class="form-row"><label>Branch Code<input type="text" id="biz_branch" placeholder="0000" maxlength="4"><small>Usually 0000 for head office</small></label></div>
+          <div class="form-row"><label>RDO Code<input type="text" id="biz_rdo" placeholder="e.g. 050"></label></div>
+          <div class="form-row"><label>Line of Business<input type="text" id="biz_lob" placeholder="e.g. Medical Supplies"></label></div>
+          <div class="form-row"><label>Registered Name (BIR)<input type="text" id="biz_regname" placeholder="As registered with BIR"></label></div>
+          <div class="form-row"><label>Registration Type
+            <select id="biz_regtype"><option value="">— select —</option><option value="VAT">VAT</option><option value="NON-VAT">Non-VAT (OPT)</option><option value="EXEMPT">Exempt</option></select>
+          </label></div>
+          <div class="form-row"><label>Taxpayer Classification
+            <select id="biz_formtype"><option value="">— select —</option><option value="CORPORATION">Corporation</option><option value="PARTNERSHIP">Partnership</option><option value="SOLE PROP">Sole Proprietorship</option><option value="INDIVIDUAL">Individual (Professional)</option></select>
+          </label></div>
+          <div class="form-actions"><button type="submit" class="btn-primary">Save</button></div>
+          <div class="save-msg" id="bizSaveMsg" hidden></div>
+        </form>
+      </div>
+    </section>
+
+    <!-- CUSTOMERS -->
+    <section class="tab-content" id="tab-customers">
+      <h2>Customers</h2>
+      <p>Map BIR details for <strong>SLS</strong>. TIN format: NNN-NNN-NNN + 4-digit branch code.</p>
+      <div class="notice" id="customersNoBiz" hidden><p>⚠ Select a business above first.</p></div>
+      <div id="customersContent">
+        <div class="toolbar">
+          <input type="text" id="custSearch" placeholder="Search…" class="search-input">
+          <button class="btn-sm btn-ghost" id="btnCustReload">↻ Reload</button>
+        </div>
+        <table class="data-table" id="customersTable">
+          <thead><tr><th>Customer</th><th>Type</th><th>Last Name / Reg. Name</th><th>First Name</th><th>Middle Name</th><th>TIN</th><th>Branch Code</th><th>Action</th></tr></thead>
+          <tbody id="customersTbody"></tbody>
+        </table>
+        <div class="pagination" id="custPagination"></div>
+      </div>
+    </section>
+
+    <!-- SUPPLIERS -->
+    <section class="tab-content" id="tab-suppliers">
+      <h2>Suppliers</h2>
+      <p>Map BIR details for <strong>SLP</strong> and <strong>QAP</strong>.</p>
+      <div class="notice" id="suppliersNoBiz" hidden><p>⚠ Select a business above first.</p></div>
+      <div id="suppliersContent">
+        <div class="toolbar">
+          <input type="text" id="suppSearch" placeholder="Search…" class="search-input">
+          <button class="btn-sm btn-ghost" id="btnSuppReload">↻ Reload</button>
+        </div>
+        <table class="data-table" id="suppliersTable">
+          <thead><tr><th>Supplier</th><th>Type</th><th>Last Name / Reg. Name</th><th>First Name</th><th>Middle Name</th><th>TIN</th><th>Branch</th><th>ATC</th><th>QAP</th><th>Action</th></tr></thead>
+          <tbody id="suppliersTbody"></tbody>
+        </table>
+        <div class="pagination" id="suppPagination"></div>
+      </div>
+    </section>
+
+    <!-- EMPLOYEES -->
+    <section class="tab-content" id="tab-employees">
+      <h2>Employees</h2>
+      <p>Store BIR details for <strong>Form 2316</strong>.</p>
+      <div class="notice" id="employeesNoBiz" hidden><p>⚠ Select a business above first.</p></div>
+      <div id="employeesContent">
+        <div class="toolbar">
+          <input type="text" id="empSearch" placeholder="Search…" class="search-input">
+          <button class="btn-sm btn-ghost" id="btnEmpReload">↻ Reload</button>
+        </div>
+        <div id="empEditorWrap" hidden>
+          <div class="emp-editor" id="empEditor">
+            <h3 id="empEditorName"></h3>
+            <div class="editor-grid">
+              <div class="form-row"><label>TIN<input type="text" id="emp_tin" placeholder="000-000-000" maxlength="11"></label></div>
+              <div class="form-row"><label>Branch Code<input type="text" id="emp_branch" placeholder="0000" maxlength="4"></label></div>
+              <div class="form-row"><label>SSS No.<input type="text" id="emp_sss" placeholder="00-0000000-0"></label></div>
+              <div class="form-row"><label>PhilHealth No.<input type="text" id="emp_philhealth" placeholder="00-000000000-0"></label></div>
+              <div class="form-row"><label>Pag-IBIG (HDMF) No.<input type="text" id="emp_pagibig" placeholder="0000-0000-0000"></label></div>
+              <div class="form-row"><label>Civil Status
+                <select id="emp_civil">
+                  <option value="">— select —</option>
+                  <option value="S">Single (S)</option><option value="ME">Married Employee (ME)</option>
+                  <option value="ME1">ME1</option><option value="ME2">ME2</option><option value="ME3">ME3</option><option value="ME4">ME4</option>
+                  <option value="HF">Head of Family (HF)</option>
+                </select>
+              </label></div>
+              <div class="form-row"><label>Tax Status
+                <select id="emp_taxstatus">
+                  <option value="">— select —</option>
+                  <option value="S">S</option><option value="S1">S1</option><option value="S2">S2</option><option value="S3">S3</option><option value="S4">S4</option>
+                  <option value="ME">ME</option><option value="ME1">ME1</option><option value="ME2">ME2</option><option value="ME3">ME3</option><option value="ME4">ME4</option>
+                  <option value="Z">Z</option>
+                </select>
+              </label></div>
+              <div class="form-row"><label>Date of Birth<input type="date" id="emp_dob"></label></div>
+              <div class="form-row"><label>Date Hired<input type="date" id="emp_hired"></label></div>
+              <div class="form-row"><label>Date Separated<input type="date" id="emp_separated"><small>Leave blank if still employed</small></label></div>
+              <div class="form-row"><label>Employment Status
+                <select id="emp_empstatus">
+                  <option value="REGULAR">Regular</option><option value="CASUAL">Casual</option>
+                  <option value="CONTRACTUAL">Contractual</option><option value="PROBATIONARY">Probationary</option>
+                </select>
+              </label></div>
+            </div>
+            <div class="form-actions">
+              <button class="btn-primary" id="btnEmpSave">Save</button>
+              <button class="btn-ghost btn-sm" id="btnEmpCancel">Cancel</button>
+            </div>
+            <div class="save-msg" id="empSaveMsg" hidden></div>
+          </div>
+        </div>
+        <table class="data-table" id="employeesTable">
+          <thead><tr><th>Employee</th><th>TIN</th><th>SSS</th><th>PhilHealth</th><th>Pag-IBIG</th><th>Tax Status</th><th>Action</th></tr></thead>
+          <tbody id="employeesTbody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- PAYSLIP ITEMS -->
+    <section class="tab-content" id="tab-payslip">
+      <h2>Payslip Items</h2>
+      <p>Map each payslip item to a BIR category for 2316 and alphalist computations.</p>
+      <div class="notice" id="payslipNoBiz" hidden><p>⚠ Select a business above first.</p></div>
+      <div id="payslipContent">
+        <div class="toolbar"><button class="btn-sm btn-outline" id="btnPayslipLoad">Load items</button></div>
+        <table class="data-table"><thead><tr><th>Item</th><th>Type</th><th>BIR Category</th><th>Action</th></tr></thead>
+        <tbody id="payslipTbody"></tbody></table>
+      </div>
+    </section>
+
+    <!-- GENERATE -->
+    <section class="tab-content" id="tab-generate">
+      <h2>Generate BIR Reports</h2>
+      <div class="notice" id="generateNoBiz" hidden><p>⚠ Select a business above first.</p></div>
+      <div id="generateContent">
+        <div class="card gen-controls">
+          <div class="form-row-inline">
+            <label>Report Type
+              <select id="genReportType">
+                <optgroup label="VAT Compliance">
+                  <option value="SLS">SLS — Summary List of Sales</option>
+                  <option value="SLP">SLP — Summary List of Purchases</option>
+                  <option value="SLSP">SLSP — Combined SLS + SLP</option>
+                </optgroup>
+                <optgroup label="Withholding Tax">
+                  <option value="QAP">QAP — Quarterly Alphalist of Payees</option>
+                  <option value="2307">Form 2307 — Certificate of CWT</option>
+                </optgroup>
+                <optgroup label="Compensation">
+                  <option value="2316">Form 2316 — Certificate of Compensation</option>
+                </optgroup>
+              </select>
+            </label>
+            <label>Period
+              <select id="genPeriodType">
+                <option value="month">Monthly</option>
+                <option value="quarter">Quarterly</option>
+                <option value="year">Annual</option>
+              </select>
+            </label>
+            <label>Year<select id="genYear"></select></label>
+            <label class="period-ctrl" data-for="quarter">Quarter
+              <select id="genQuarter">
+                <option value="1">Q1 (Jan–Mar)</option><option value="2">Q2 (Apr–Jun)</option>
+                <option value="3">Q3 (Jul–Sep)</option><option value="4">Q4 (Oct–Dec)</option>
+              </select>
+            </label>
+            <label class="period-ctrl" data-for="month">Month
+              <select id="genMonth">
+                <option value="1">January</option><option value="2">February</option><option value="3">March</option>
+                <option value="4">April</option><option value="5">May</option><option value="6">June</option>
+                <option value="7">July</option><option value="8">August</option><option value="9">September</option>
+                <option value="10">October</option><option value="11">November</option><option value="12">December</option>
+              </select>
+            </label>
+          </div>
+          <div id="gen2307Options" class="gen-extra" hidden>
+            <label>Supplier (blank = all)
+              <select id="gen2307Supplier"><option value="">— All suppliers —</option></select>
+            </label>
+          </div>
+          <div id="gen2316Options" class="gen-extra" hidden>
+            <label>Employee (blank = all)
+              <select id="gen2316Employee"><option value="">— All employees —</option></select>
+            </label>
+          </div>
+          <div class="form-actions">
+            <button class="btn-primary" id="btnGenPreview">Preview</button>
+          </div>
+        </div>
+        <div id="genPreviewArea" hidden>
+          <div class="gen-summary" id="genSummary"></div>
+          <div class="gen-export-bar">
+            <span>Export:</span>
+            <button class="btn-sm btn-primary" id="btnExportDat" hidden>⬇ .DAT File</button>
+            <button class="btn-sm btn-outline" id="btnExportExcel">⬇ Excel</button>
+            <button class="btn-sm btn-outline" id="btnExportPrint" hidden>🖨 Print / PDF</button>
+          </div>
+          <div id="genPreviewTable"></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div class="loading-overlay" id="loadingOverlay" hidden>
+    <div class="spinner"></div>
+    <div class="loading-msg" id="loadingMsg">Loading…</div>
+  </div>
+
+  <script src="api.js"></script>
+  <script src="generate.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
